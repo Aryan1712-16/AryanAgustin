@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios - Frutas y Verduras</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Transiciones suaves entre pasos */
+        .step-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .step-content.active {
+            display: block;
+            opacity: 1;
+        }
+        /* Estilos personalizados para las tarjetas seleccionadas */
+        .product-card.selected {
+            border-color: #059669;
+            background-color: #ECFDF5;
+            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.25);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Encabezado de la App -->
+    <header class="bg-emerald-600 text-white py-6 shadow-md">
+        <div class="max-w-xl mx-auto px-4 text-center">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center justify-center gap-2">
+                <span>🛒</span> Calculadora de Precios
+            </h1>
+            <p class="text-emerald-100 text-sm mt-1">Calcula el importe exacto de tu compra según el peso</p>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="max-w-xl w-full mx-auto p-4 sm:p-6 my-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-100">
+
+            <!-- BARRA DE PASOS (STEPPER) -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between relative">
+                    <!-- Línea de Fondo -->
+                    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-slate-200 -z-0"></div>
+                    <!-- Línea de Progreso -->
+                    <div id="progress-bar" class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-emerald-500 transition-all duration-300 -z-0" style="width: 0%;"></div>
+
+                    <!-- Paso 1 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-node-1" class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-md transition-colors">
+                            1
+                        </div>
+                        <span class="text-xs font-bold mt-2 text-emerald-600">Producto</span>
+                    </div>
+
+                    <!-- Paso 2 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-node-2" class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors">
+                            2
+                        </div>
+                        <span class="text-xs font-semibold mt-2 text-slate-400" id="step-text-2">Peso</span>
+                    </div>
+
+                    <!-- Paso 3 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-node-3" class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors">
+                            3
+                        </div>
+                        <span class="text-xs font-semibold mt-2 text-slate-400" id="step-text-3">Resultado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 1: SELECCIÓN DE PRODUCTO -->
+            <div id="step-1" class="step-content active">
+                <h2 class="text-xl font-bold text-slate-800 mb-1">Paso 1: Elige tu Producto</h2>
+                <p class="text-sm text-slate-500 mb-6">Toca el producto que deseas consultar:</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="product-grid">
+                    <!-- Tarjetas de productos renderizadas con JS -->
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button id="btn-to-step-2" onclick="nextStep(2)" disabled
+                            class="w-full sm:w-auto px-6 py-3 bg-slate-300 text-slate-500 font-bold rounded-xl cursor-not-allowed transition-all shadow-sm">
+                        Siguiente: Peso <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASO 2: INGRESO DE PESO -->
+            <div id="step-2" class="step-content">
+                <h2 class="text-xl font-bold text-slate-800 mb-1">Paso 2: ¿Cuánto vas a llevar?</h2>
+                <p class="text-sm text-slate-500 mb-6">Ingresa la cantidad en gramos escribiendo directamente:</p>
+
+                <!-- Tarjeta del Producto Seleccionado -->
+                <div class="flex items-center gap-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100 mb-6 shadow-sm">
+                    <span id="summary-emoji" class="text-4xl">🍓</span>
+                    <div>
+                        <p class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Producto Seleccionado</p>
+                        <p id="summary-name" class="font-extrabold text-slate-800 text-lg">Frutilla</p>
+                        <p id="summary-price-kg" class="text-xs text-slate-600 font-semibold">$UY 150 / kg</p>
+                    </div>
+                </div>
+
+                <!-- Input Numérico Directo -->
+                <div class="mb-4">
+                    <label for="weight-input" class="block text-sm font-bold text-slate-700 mb-2">
+                        Peso en gramos (g):
+                    </label>
+                    <div class="relative">
+                        <input type="number" id="weight-input" min="1" max="50000" step="10" value="500"
+                               class="w-full p-4 pr-16 border-2 border-slate-200 rounded-xl text-2xl font-extrabold text-slate-800 focus:border-emerald-500 focus:outline-none transition-colors"
+                               oninput="syncFromInput(this.value)">
+                        <span class="absolute right-4 top-1/2 transform -translate-y-1/2 font-bold text-slate-400 text-lg">
+                            g
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Botones Rápidos de Peso -->
+                <div class="mb-6">
+                    <p class="text-xs font-semibold text-slate-500 mb-2">Añadir cantidad rápida:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setQuickWeight(250)" class="py-2 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors">
+                            250g (1/4 kg)
+                        </button>
+                        <button type="button" onclick="setQuickWeight(500)" class="py-2 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors">
+                            500g (1/2 kg)
+                        </button>
+                        <button type="button" onclick="setQuickWeight(1000)" class="py-2 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors">
+                            1000g (1 kg)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Deslizador de Apoyo Sincronizado -->
+                <div class="mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="flex justify-between text-xs text-slate-500 font-medium mb-2">
+                        <span>100g</span>
+                        <span id="slider-label-value" class="font-bold text-emerald-600">500g (0.50 kg)</span>
+                        <span>5000g (5 kg)</span>
+                    </div>
+                    <input type="range" id="weight-slider" min="100" max="5000" step="50" value="500"
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                           oninput="syncFromSlider(this.value)">
+                </div>
+
+                <!-- Botones de Navegación -->
+                <div class="flex gap-3">
+                    <button onclick="prevStep(1)" class="w-1/2 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Volver
+                    </button>
+                    <button onclick="calculateAndShowResult()" class="w-1/2 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md">
+                        Calcular <i class="fa-solid fa-calculator ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASO 3: RESULTADO -->
+            <div id="step-3" class="step-content">
+                <h2 class="text-xl font-bold text-slate-800 mb-1">Paso 3: Total Calculado</h2>
+                <p class="text-sm text-slate-500 mb-6">Importe total para tu pedido:</p>
+
+                <!-- Tarjeta de Total Gran Tamaño -->
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-2xl shadow-lg mb-6 text-center">
+                    <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest mb-1">Total a Pagar</p>
+                    <p id="total-price-display" class="text-4xl sm:text-5xl font-black">$UY 0</p>
+                </div>
+
+                <!-- Desglose de Cuenta -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3 mb-8 text-sm">
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>Producto:</span>
+                        <span id="res-product-name" class="font-bold text-slate-800">---</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>Precio por kilo:</span>
+                        <span id="res-price-per-kg" class="font-semibold text-slate-700">$UY 0 / kg</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>Cantidad ingresada:</span>
+                        <span id="res-weight-display" class="font-semibold text-slate-700">0 g (0 kg)</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex gap-3">
+                    <button onclick="prevStep(2)" class="w-1/2 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                        <i class="fa-solid fa-pen mr-2"></i> Modificar Peso
+                    </button>
+                    <button onclick="resetCalculator()" class="w-1/2 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-colors">
+                        Hacer otro cálculo <i class="fa-solid fa-rotate-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center text-xs text-slate-400">
+        Calculadora Web Pública • Lista para GitHub Pages
+    </footer>
+
+    <!-- JAVASCRIPT DE LA APLICACIÓN -->
+    <script>
+        /*
+           PRODUCTOS Y PRECIOS EXACTOS ($UY por kilo)
+        */
+        const PRODUCTS = {
+            frutilla: {
+                id: 'frutilla',
+                name: 'Frutilla',
+                pricePerKg: 150,
+                emoji: '🍓',
+                image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80'
+            },
+            papa: {
+                id: 'papa',
+                name: 'Papa',
+                pricePerKg: 60,
+                emoji: '🥔',
+                image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=400&q=80'
+            },
+            mandarina: {
+                id: 'mandarina',
+                name: 'Mandarina',
+                pricePerKg: 60,
+                emoji: '🍊',
+                image: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=400&q=80'
+            },
+            limon: {
+                id: 'limon',
+                name: 'Limón',
+                pricePerKg: 80,
+                emoji: '🍋',
+                image: 'https://images.unsplash.com/photo-1534531141161-e4ece2703816?auto=format&fit=crop&w=400&q=80'
+            },
+            palta: {
+                id: 'palta',
+                name: 'Palta',
+                pricePerKg: 150,
+                emoji: '🥑',
+                image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=400&q=80'
+            }
+        };
+
+        let selectedProductId = null;
+
+        // Renderizar Tarjetas de Productos
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            Object.values(PRODUCTS).forEach(product => {
+                const card = document.createElement('div');
+                card.className = `product-card border-2 border-slate-200 rounded-xl p-3 text-center cursor-pointer transition-all hover:border-emerald-500 hover:shadow-md flex flex-col items-center justify-between bg-white`;
+                card.id = `card-${product.id}`;
+                card.onclick = () => selectProduct(product.id);
+
+                card.innerHTML = `
+                    <div class="w-full h-24 mb-2 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span class="text-4xl hidden">${product.emoji}</span>
+                    </div>
+                    <span class="font-bold text-slate-800 text-sm sm:text-base">${product.name}</span>
+                    <span class="text-xs text-emerald-600 font-extrabold mt-1">$UY ${product.pricePerKg} / kg</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Seleccionar producto e ir al Paso 2
+        function selectProduct(productId) {
+            selectedProductId = productId;
+            
+            document.querySelectorAll('.product-card').forEach(card => card.classList.remove('selected'));
+            const selectedCard = document.getElementById(`card-${productId}`);
+            if (selectedCard) selectedCard.classList.add('selected');
+
+            const prod = PRODUCTS[productId];
+            document.getElementById('summary-emoji').textContent = prod.emoji;
+            document.getElementById('summary-name').textContent = prod.name;
+            document.getElementById('summary-price-kg').textContent = `$UY ${prod.pricePerKg} por kilo`;
+
+            // Avanzar automáticamente al paso 2
+            nextStep(2);
+        }
+
+        // Asignar peso rápido mediante botones
+        function setQuickWeight(grams) {
+            document.getElementById('weight-input').value = grams;
+            syncFromInput(grams);
+        }
+
+        // Sincronizar Input y Slider
+        function syncFromInput(val) {
+            const num = parseFloat(val) || 0;
+            const slider = document.getElementById('weight-slider');
+            slider.value = Math.min(Math.max(num, 100), 5000);
+            updateSliderLabel(num);
+        }
+
+        function syncFromSlider(val) {
+            document.getElementById('weight-input').value = val;
+            updateSliderLabel(val);
+        }
+
+        function updateSliderLabel(grams) {
+            const kg = (grams / 1000).toFixed(2);
+            document.getElementById('slider-label-value').textContent = `${grams}g (${kg} kg)`;
+        }
+
+        // Navegación entre Pasos
+        function goToStep(stepNumber) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${stepNumber}`).classList.add('active');
+
+            const progressBar = document.getElementById('progress-bar');
+            if (stepNumber === 1) progressBar.style.width = '0%';
+            if (stepNumber === 2) progressBar.style.width = '50%';
+            if (stepNumber === 3) progressBar.style.width = '100%';
+
+            for (let i = 1; i <= 3; i++) {
+                const node = document.getElementById(`step-node-${i}`);
+                const text = document.getElementById(`step-text-${i}`);
+                
+                if (i <= stepNumber) {
+                    node.className = "w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-md transition-colors";
+                    if (text) text.className = "text-xs font-bold mt-2 text-emerald-600";
+                } else {
+                    node.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors";
+                    if (text) text.className = "text-xs font-semibold mt-2 text-slate-400";
+                }
+            }
+        }
+
+        function nextStep(step) {
+            if (step === 2 && !selectedProductId) return;
+            goToStep(step);
+        }
+
+        function prevStep(step) {
+            goToStep(step);
+        }
+
+        // Cálculo del Total
+        function calculateAndShowResult() {
+            if (!selectedProductId) return;
+
+            const product = PRODUCTS[selectedProductId];
+            const weightGrams = parseFloat(document.getElementById('weight-input').value) || 0;
+
+            if (weightGrams <= 0) {
+                alert('Por favor, ingresa una cantidad en gramos mayor a 0.');
+                return;
+            }
+
+            const weightKg = weightGrams / 1000;
+            const totalPrice = weightKg * product.pricePerKg;
+
+            document.getElementById('total-price-display').textContent = `$UY ${totalPrice.toLocaleString('es-UY', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+            document.getElementById('res-product-name').textContent = `${product.emoji} ${product.name}`;
+            document.getElementById('res-price-per-kg').textContent = `$UY ${product.pricePerKg} / kg`;
+            document.getElementById('res-weight-display').textContent = `${weightGrams.toLocaleString('es-UY')} g (${weightKg.toFixed(3)} kg)`;
+
+            goToStep(3);
+        }
+
+        // Reiniciar
+        function resetCalculator() {
+            selectedProductId = null;
+            document.querySelectorAll('.product-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById('weight-input').value = 500;
+            syncFromInput(500);
+            goToStep(1);
+        }
+
+        // Inicializar al cargar
+        window.onload = function() {
+            renderProducts();
+        };
+    </script>
+</body>
+</html>
